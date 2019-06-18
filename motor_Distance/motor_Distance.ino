@@ -154,7 +154,7 @@ void initDirs() {
 
 void espace(){
   if(sensorValue>75 && distanceEspace > 10){
-    metre = (ms * distanceEspace)*10;
+    metre = (ms * distanceEspace)/10;
     Serial.print("Espace = ");
     Serial.println(metre);
     distanceEspace = 0;
