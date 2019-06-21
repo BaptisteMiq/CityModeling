@@ -25,14 +25,23 @@ unsigned long timeold;
 
 // number of pulses per revolution
 // based on encoder disc
-unsigned int pulsesperturn = 80;
+unsigned int pulsesperturn = 20;
 
 bool pathfinding = false;
 
-int ledLeft = 8;
+int ledLeft = 12;
 int ledRight = 4;
 
 Car* car;
+
+int trigPin = 13;
+int echoPin = 8;
+long lectureEcho;
+
+int distanceEspace = 0;
+float ms;
+String string;
+float metre;
 
 void setup() {
   Serial.begin(9600);
@@ -60,7 +69,7 @@ void setup() {
 
   Serial.println("Setup finished");
 
-  pathfinding = true;
+  pathfinding = false;
 
   int startNode = 0;
   int endNode = 15;
@@ -74,11 +83,21 @@ void setup() {
 
     car->readDirs();
   }
+
+  pinMode(trigPin, OUTPUT);
+  digitalWrite(trigPin, LOW);
+  pinMode(echoPin, INPUT);
 }
 
+int prevMil = millis();
 void loop() {
 
   initDirs();
+
+  if(millis() - prevMil > 100) {
+    prevMil = millis();
+    espace(getDistance()); 
+  }
 
   car->flashingCounter++;
   if(car->flashingCounter > car->flashingSpeed) {
@@ -101,14 +120,18 @@ void loop() {
   }
 
   // Get Rpm
-  if (millis() - timeold >= 1000) {
+  //if (millis() - timeold >= 1000) {
     detachInterrupt(1);
     rpm = (60000 / pulsesperturn ) / (millis() - timeold) * pulses;
+    ms = ((2*3.14*0.0325)/60) * rpm;
+    string = String(ms);
     timeold = millis();
     pulses = 0;
-    //Serial.println(rpm);
+    /*Serial.print(string);
+    Serial.print(" : ");
+    Serial.println(rpm);*/
     attachInterrupt(1, counter, FALLING);
-  }
+  //}
   
 }
 
@@ -134,4 +157,31 @@ void initDirs() {
   right = digitalRead(rightPin) == HIGH;
   middleLeft = digitalRead(middleLeftPin) == HIGH;
   middleRight = digitalRead(middleRightPin) == HIGH;
+}
+
+int getDistance() {
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  lectureEcho = pulseIn(echoPin, HIGH);
+  int distCm = lectureEcho / 58;
+  return distCm;
+}
+
+String distancesStockees[1];
+void espace(int distCm){
+  if(distCm < 8 && distanceEspace > 0){
+    ms = 7;
+    Serial.print(distanceEspace);
+    Serial.print(" : ");
+    Serial.println(ms);
+    metre = (((ms * distanceEspace) / 10) / 100 + 4);
+    distancesStockees[0] = String(metre);
+    Serial.print("Espace = ");
+    Serial.println(distancesStockees[0]);
+    distanceEspace = 0;
+    }
+  else if(distCm >= 8) {
+   distanceEspace += 100;
+  } 
 }

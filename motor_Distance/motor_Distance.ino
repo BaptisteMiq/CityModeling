@@ -1,6 +1,7 @@
 #include "Grove_I2C_Motor_Driver.h"
 #include "Car.h"
 #include "Pathfinder.h"
+#include "Ultrasonic.h"
 
 // Motor
 #define I2C_ADDRESS 0x0f
@@ -37,10 +38,12 @@ unsigned int pulsesperturn = 20;
 
 bool pathfinding = false;
 
-int ledLeft = 8;
+int ledLeft = 12;
 int ledRight = 4;
 
 Car* car;
+
+Ultrasonic ultrasonic(8);
 
 void setup() {
   Serial.begin(9600);
@@ -84,13 +87,16 @@ void setup() {
   }
 }
 
+int prevTime = millis();
 void loop() {
 
   initDirs();
 
-  sensorValue = analogRead(analogInPin)-200;
-  espace();
-  delay(100);
+  if(millis() - prevTime > 100) {
+    prevTime = millis();
+    int distanceCm = ultrasonic.MeasureInCentimeters(); // two measurements should keep an interval
+    Serial.println(distanceCm);
+  }
 
   car->flashingCounter++;
   if(car->flashingCounter > car->flashingSpeed) {
@@ -120,9 +126,9 @@ void loop() {
     string = String(ms);
     timeold = millis();
     pulses = 0;
-   // Serial.print(string);
-   // Serial.print(" : ");
-   // Serial.println(rpm);
+   Serial.print(string);
+   Serial.print(" : ");
+   Serial.println(rpm);
     attachInterrupt(1, counter, FALLING);
   }
   

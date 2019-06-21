@@ -93,28 +93,22 @@ void Car::moveArround(bool left, bool right, bool middleLeft, bool middleRight) 
     turnLeft();
   } else if ((allowTurnRight) & ! (allowTurnLeft)) {
     turnRight();
-  } else
-  if (left & ! (allowTurnRight || allowTurnLeft)) {
+  } else if (left & ! (allowTurnRight || allowTurnLeft)) {
     moveAllLittle(1);
     allowTurnRight = false;
     allowTurnLeft = true;
-  } else
-  if (right & ! (allowTurnRight || allowTurnLeft)) {
+  } else if (right & ! (allowTurnRight || allowTurnLeft)) {
     moveAllLittle(1);
     allowTurnLeft = false;
     allowTurnRight = true;
-  } else
-  if (allowRecLeft) {
+  } else if (allowRecLeft) {
     turnLeft();
-  } else
-  if (allowRecRight) {
+  } else if (allowRecRight) {
     turnRight();
   }
-  else
-  if (middleLeft) {
+  else if (middleLeft) {
     allowRecLeft = true;
-  } else
-  if (middleRight) {
+  } else if (middleRight) {
     allowRecRight = true;
   }
   else {
@@ -127,7 +121,7 @@ void Car::moveArround(bool left, bool right, bool middleLeft, bool middleRight) 
     flashingLeft = true;
     pulseTurnLeft++;
     if (pulseTurnLeft > 10) {
-      if(middleLeft) {
+      if (middleLeft) {
         pulseTurnLeft = 0;
         allowTurnLeft = false;
         flashingLeft = false;
@@ -139,7 +133,7 @@ void Car::moveArround(bool left, bool right, bool middleLeft, bool middleRight) 
     flashingRight = true;
     pulseTurnRight++;
     if (pulseTurnRight > 10) {
-      if(middleRight) {
+      if (middleRight) {
         pulseTurnRight = 0;
         allowTurnRight = false;
         flashingRight = false;
@@ -161,7 +155,7 @@ void Car::recalib() {
 
 void Car::movePattern(bool left, bool right, bool middleLeft, bool middleRight) {
 
-  if(hasFinishedPattern) {
+  if (hasFinishedPattern) {
     return;
   }
 
@@ -171,21 +165,16 @@ void Car::movePattern(bool left, bool right, bool middleLeft, bool middleRight) 
     turnRight();
   } else if ((allowTurnArround) & ! (allowTurnLeft || allowTurnRight)) {
     turnRight();
-  } else
-  if ((left || right) & ! (allowTurnRight || allowTurnLeft)) {
+  } else if ((left || right) & ! (allowTurnRight || allowTurnLeft)) {
     readDirs();
-  } else
-  if (allowRecLeft) {
+  } else if (allowRecLeft) {
     turnLeft();
-  } else
-  if (allowRecRight) {
+  } else if (allowRecRight) {
     turnRight();
   }
-  else
-  if (middleLeft) {
+  else if (middleLeft) {
     allowRecLeft = true;
-  } else
-  if (middleRight) {
+  } else if (middleRight) {
     allowRecRight = true;
   }
   else {
@@ -197,7 +186,7 @@ void Car::movePattern(bool left, bool right, bool middleLeft, bool middleRight) 
   if (allowTurnLeft) {
     pulseTurnLeft++;
     if (pulseTurnLeft > 10) {
-      if(middleLeft) {
+      if (middleLeft) {
         Serial.println("Gauche arret");
         pulseTurnLeft = 0;
         allowTurnLeft = false;
@@ -208,64 +197,64 @@ void Car::movePattern(bool left, bool right, bool middleLeft, bool middleRight) 
   if (allowTurnRight) {
     pulseTurnRight++;
     if (pulseTurnRight > 10) {
-      if(middleRight) {
+      if (middleRight) {
         Serial.println("Droite arret");
         pulseTurnRight = 0;
         allowTurnRight = false;
       }
     }
-  }  
+  }
 
   if (allowTurnArround) {
     pulseTurnArround++;
     if (pulseTurnArround > 50) {
-      if(middleRight) {
+      if (middleRight) {
         pulseTurnArround = 0;
         allowTurnArround = false;
       }
     }
-  }  
+  }
 }
 
 void Car::readDirs() {
-    char dir = pathfinder->dirs.charAt(dirsCursor);
+  char dir = pathfinder->dirs.charAt(dirsCursor);
   //  Serial.print(dirsCursor);
   //  Serial.print(" : ");
   //  Serial.println(dir);
 
-    flashingLeft = false;
-    flashingRight = false;
-      
-    if(pathfinder->dirs.charAt(dirsCursor + 1) == '1') {
-      flashingLeft = true;
-    } else if(pathfinder->dirs.charAt(dirsCursor + 1) == '2') {
-      flashingRight = true;
-    }
+  flashingLeft = false;
+  flashingRight = false;
 
-    if(dir == '0') {
-      dirsCursor++;
-      moveAll(1);
-      delay(100);
-    } else if(dir == '1') {
-      moveAllLittle(1);
-      allowTurnRight = false;
-      allowTurnLeft = true;
-      turnLeft();
-      dirsCursor++;
-    } else if(dir == '2') {
-      moveAllLittle(1);
-      allowTurnRight = true;
-      allowTurnLeft = false;
-      dirsCursor++;
-    } else if(dir == '3') {
-      allowTurnArround = true;
-      allowTurnRight = false;
-      allowTurnLeft = false;
-      dirsCursor++;
-    } else {
-      moveAllLittle(1);
-      stopAll();
-      hasFinishedPattern = true;
-      return;
-    }
+  if (pathfinder->dirs.charAt(dirsCursor + 1) == '1') {
+    flashingLeft = true;
+  } else if (pathfinder->dirs.charAt(dirsCursor + 1) == '2') {
+    flashingRight = true;
+  }
+
+  if (dir == '0') {
+    dirsCursor++;
+    moveAll(1);
+    delay(100);
+  } else if (dir == '1') {
+    moveAllLittle(1);
+    allowTurnRight = false;
+    allowTurnLeft = true;
+    turnLeft();
+    dirsCursor++;
+  } else if (dir == '2') {
+    moveAllLittle(1);
+    allowTurnRight = true;
+    allowTurnLeft = false;
+    dirsCursor++;
+  } else if (dir == '3') {
+    allowTurnArround = true;
+    allowTurnRight = false;
+    allowTurnLeft = false;
+    dirsCursor++;
+  } else {
+    moveAllLittle(1);
+    stopAll();
+    hasFinishedPattern = true;
+    return;
+  }
 }
