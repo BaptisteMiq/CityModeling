@@ -1,6 +1,10 @@
 #include "Grove_I2C_Motor_Driver.h"
 #include "Car.h"
 #include "Pathfinder.h"
+#include <VirtualWire.h>
+//Emitter
+int RF_TX_PIN = 8;
+int id = 0;
 
 // Motor
 #define I2C_ADDRESS 0x0f
@@ -47,6 +51,10 @@ double prevTimeDist = millis();
 
 void setup() {
   Serial.begin(9600);
+
+  vw_set_tx_pin(RF_TX_PIN); 
+  vw_setup(2000); 
+      
   Motor.begin(I2C_ADDRESS);
 
   car = new Car();
@@ -95,7 +103,6 @@ int prevMil = millis();
 void loop() {
 
   initDirs();
-
   if(millis() - prevMil > 100) {
     prevMil = millis();
     espace(getDistance()); 
@@ -185,13 +192,21 @@ void espace(int distCm){
     ms = 3;
     /*Serial.print(String(intervalTime));
     Serial.print(" : ");
+<<<<<<< HEAD
     Serial.println(ms);*/
     metre = ((ms/10) * (intervalTime/1000))*100;
     if(metre < 15 || metre > 100) return;
     distancesStockees[0] = String(metre);
+=======
+    Serial.println(ms);
+    metre = (((ms * distanceEspace) / 10) / 100 + 4);
+    String distanceStockees = String(id) + " " + String(metre);
+>>>>>>> 42a875e8a40384b6163f42483e7062d00f756039
     Serial.print("Espace = ");
-    Serial.println(distancesStockees[0]);
+    sendMessage(distanceStockees.c_str());
+    Serial.println(distanceStockees);
     distanceEspace = 0;
+<<<<<<< HEAD
     intervalTime = 0;
   }
   if(distCm < 8) {
@@ -201,4 +216,33 @@ void espace(int distCm){
     onWall = false;
   }
   //prevTimeDist = millis();
+=======
+    }
+  else if(distCm >= 8) {
+   distanceEspace += 100;
+  }
+>>>>>>> 42a875e8a40384b6163f42483e7062d00f756039
 }
+
+  void sendMessage(const char* msg){
+
+      //msg = "Test de la trame !!!!!!!!!!!!!!!";
+      int idVehicle = 155;
+      char message[strlen(msg)+1];
+      int conversion = 0;
+      int key = 
+      5;
+
+      message[0] = (char) idVehicle;
+      for(int i=0; i < strlen(msg); ++i)
+      {
+        conversion = (int) msg[i] + key;
+        message[i+1] = (char) conversion;
+        
+      }
+      Serial.print(conversion);
+      Serial.print("  ");
+      vw_send((uint8_t *)message, strlen(message));
+      id++;
+      delay(400);
+  }
