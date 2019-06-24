@@ -35,13 +35,15 @@ int ledRight = 4;
 Car* car;
 
 int trigPin = 13;
-int echoPin = 8;
+int echoPin = 9;
 long lectureEcho;
 
 int distanceEspace = 0;
 float ms;
 String string;
 float metre;
+
+double prevTimeDist = millis();
 
 void setup() {
   Serial.begin(9600);
@@ -168,20 +170,35 @@ int getDistance() {
   return distCm;
 }
 
+int onWall = false;
 String distancesStockees[1];
 void espace(int distCm){
-  if(distCm < 8 && distanceEspace > 0){
-    ms = 7;
-    Serial.print(distanceEspace);
+  //Serial.println(distCm);
+  if(distCm < 8 && !onWall && millis() - prevTimeDist > 100) {
+    onWall = true;
+    double intervalTime = millis() - prevTimeDist;
+    /*Serial.print(millis());
+    Serial.print(" - ");
+    Serial.println(prevTimeDist);*/
+    prevTimeDist = millis();
+    //Serial.println(String(ms));
+    ms = 3;
+    /*Serial.print(String(intervalTime));
     Serial.print(" : ");
-    Serial.println(ms);
-    metre = (((ms * distanceEspace) / 10) / 100 + 4);
+    Serial.println(ms);*/
+    metre = ((ms/10) * (intervalTime/1000))*100;
+    if(metre < 15 || metre > 100) return;
     distancesStockees[0] = String(metre);
     Serial.print("Espace = ");
     Serial.println(distancesStockees[0]);
     distanceEspace = 0;
-    }
-  else if(distCm >= 8) {
-   distanceEspace += 100;
-  } 
+    intervalTime = 0;
+  }
+  if(distCm < 8) {
+    prevTimeDist = millis();
+  }
+  if(distCm >= 8) {
+    onWall = false;
+  }
+  //prevTimeDist = millis();
 }
