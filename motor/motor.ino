@@ -46,6 +46,7 @@ int distanceEspace = 0;
 float ms;
 String string;
 float metre;
+const unsigned long MEASURE_TIMEOUT = 25000UL; // 25ms = ~8m à 340m/s
 
 double prevTimeDist = millis();
 
@@ -79,7 +80,7 @@ void setup() {
 
   Serial.println("Setup finished");
 
-  pathfinding = false;
+  pathfinding = true;
 
   int startNode = 0;
   int endNode = 15;
@@ -89,8 +90,8 @@ void setup() {
 
   if(pathfinding) {
     car->pathfinder->dijkstra(endNode, startNode);
-        Serial.println(car->pathfinder->dirs);
-
+    Serial.println(car->pathfinder->dirs);
+    Serial.println("Starting pathfinding");
     car->readDirs();
   }
 
@@ -103,10 +104,6 @@ int prevMil = millis();
 void loop() {
 
   initDirs();
-  if(millis() - prevMil > 100) {
-    prevMil = millis();
-    espace(getDistance()); 
-  }
 
   car->flashingCounter++;
   if(car->flashingCounter > car->flashingSpeed) {
@@ -129,7 +126,7 @@ void loop() {
   }
 
   // Get Rpm
-  //if (millis() - timeold >= 1000) {
+  if (millis() - timeold >= 1000) {
     detachInterrupt(1);
     rpm = (60000 / pulsesperturn ) / (millis() - timeold) * pulses;
     ms = ((2*3.14*0.0325)/60) * rpm;
@@ -140,7 +137,12 @@ void loop() {
     Serial.print(" : ");
     Serial.println(rpm);*/
     attachInterrupt(1, counter, FALLING);
-  //}
+  }
+
+  if(millis() - prevMil > 100) {
+    prevMil = millis();
+    espace(getDistance()); 
+  }
   
 }
 
@@ -172,77 +174,58 @@ int getDistance() {
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
-  lectureEcho = pulseIn(echoPin, HIGH);
+  lectureEcho = pulseIn(echoPin, HIGH, MEASURE_TIMEOUT);
   int distCm = lectureEcho / 58;
   return distCm;
 }
 
 int onWall = false;
-String distancesStockees[1];
 void espace(int distCm){
-  //Serial.println(distCm);
-  if(distCm < 8 && !onWall && millis() - prevTimeDist > 100) {
+
+  if(distCm < 8 && !onWall && millis() - prevTimeDist > 100 && car->canMeasure) {
     onWall = true;
     double intervalTime = millis() - prevTimeDist;
-    /*Serial.print(millis());
-    Serial.print(" - ");
-    Serial.println(prevTimeDist);*/
     prevTimeDist = millis();
     //Serial.println(String(ms));
     ms = 3;
-    /*Serial.print(String(intervalTime));
-    Serial.print(" : ");
-<<<<<<< HEAD
-    Serial.println(ms);*/
     metre = ((ms/10) * (intervalTime/1000))*100;
     if(metre < 15 || metre > 100) return;
-    distancesStockees[0] = String(metre);
-=======
     Serial.println(ms);
-    metre = (((ms * distanceEspace) / 10) / 100 + 4);
+    metre = ((ms/10) * (intervalTime/1000))*100;
     String distanceStockees = String(id) + " " + String(metre);
->>>>>>> 42a875e8a40384b6163f42483e7062d00f756039
     Serial.print("Espace = ");
     sendMessage(distanceStockees.c_str());
     Serial.println(distanceStockees);
     distanceEspace = 0;
-<<<<<<< HEAD
     intervalTime = 0;
   }
   if(distCm < 8) {
     prevTimeDist = millis();
+    Serial.println("reset");
   }
   if(distCm >= 8) {
     onWall = false;
   }
-  //prevTimeDist = millis();
-=======
-    }
-  else if(distCm >= 8) {
-   distanceEspace += 100;
-  }
->>>>>>> 42a875e8a40384b6163f42483e7062d00f756039
 }
 
-  void sendMessage(const char* msg){
+void sendMessage(const char* msg){
 
-      //msg = "Test de la trame !!!!!!!!!!!!!!!";
-      int idVehicle = 155;
-      char message[strlen(msg)+1];
-      int conversion = 0;
-      int key = 
-      5;
+    //msg = "Test de la trame !!!!!!!!!!!!!!!";
+    int idVehicle = 155;
+    char message[strlen(msg)+1];
+    int conversion = 0;
+    int key = 5;
 
-      message[0] = (char) idVehicle;
-      for(int i=0; i < strlen(msg); ++i)
-      {
-        conversion = (int) msg[i] + key;
-        message[i+1] = (char) conversion;
-        
-      }
-      Serial.print(conversion);
-      Serial.print("  ");
-      vw_send((uint8_t *)message, strlen(message));
-      id++;
-      delay(400);
-  }
+    message[0] = (char) idVehicle;
+    for(int i=0; i < strlen(msg); ++i)
+    {
+      conversion = (int) msg[i] + key;
+      message[i+1] = (char) conversion;
+    }
+    vw_send((uint8_t *)message, strlen(msg)+1);
+
+    car->stopAll();
+    vw_wait_tx();
+    car->moveAll(1);
+    
+}

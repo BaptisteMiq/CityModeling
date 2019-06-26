@@ -46,12 +46,16 @@ void Pathfinder::dijkstra(int startNode, int endNode) {
     minNode = findMinNode();
   }
 
+  int index = 0;
   Node* prev = &nodes[endNode];
 
   while(prev->getPrev()->getExists() && prev->getPrev()->isValidNode() && (prev->getX() != nodes[startNode].getX() || prev->getY() != nodes[startNode].getY())) {
     setRotationFromNode(prev);
+    directions[index] = prev;
+    index++;
     prev = prev->getPrev();
   }
+  directions[index] = prev;
 
   malloc(sizeof(prev));
   malloc(sizeof(nodes));
@@ -154,6 +158,26 @@ int Pathfinder::getRelativeRotation(String dir) {
       break;
   }
   return 0;
+}
+
+int Pathfinder::getNodeId(Node* n) {
+  int nId = 0;
+  for(int i = 0; i <= 15; i++) {
+    if(nodes[i].getX() == n->getX() && nodes[i].getY() == n->getY()) {
+      nId = i;
+    }
+  }
+  return nId;
+}
+
+int Pathfinder::getNodeIdFromCo(int x, int y) {
+  int nId = 0;
+  for(int i = 0; i <= 15; i++) {
+    if(nodes[i].getX() == x && nodes[i].getY() == y) {
+      nId = i;
+    }
+  }
+  return nId;
 }
 
 void Pathfinder::initNodes() {

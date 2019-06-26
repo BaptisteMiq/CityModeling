@@ -21,7 +21,9 @@ class Car {
     void movePattern(bool left, bool right, bool middleLeft, bool middleRight);
     void recalib();
     void readDirs();
-
+    void sendMessage(const char* msg);
+    
+    int indexNode;
     int carAngle;
     int recCounter;
     bool allowRecLeft;
@@ -36,6 +38,7 @@ class Car {
     int flashingSpeed;
     bool flashingLeft;
     bool flashingRight;
+    bool canMeasure;
 
     int dirsCursor;
     bool hasFinishedPattern;

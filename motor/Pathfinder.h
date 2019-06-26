@@ -16,10 +16,13 @@ class Pathfinder {
     void setRotationFromNode(Node* prev);
     int getRelativeRotation(String dir);
     void setCar(Car* c);
+    int getNodeId(Node* n);
+    int getNodeIdFromCo(int x, int y);
 
     Car* car;
     Node nodes[16];
     String dirs;
+    Node* directions[10];
 };
 
 #endif

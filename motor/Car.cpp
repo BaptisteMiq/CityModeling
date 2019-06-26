@@ -3,6 +3,8 @@
 #include "Grove_I2C_Motor_Driver.h"
 #define I2C_ADDRESS 0x0f
 
+#include <VirtualWire.h>
+
 Car::Car() {
   _motorSpeed = 70;
   pulseTurnLeft = 0;
@@ -21,6 +23,8 @@ Car::Car() {
   dirsCursor = 0;
   hasFinishedPattern = false;
   carAngle = 0;
+  indexNode = 0;
+  canMeasure = false;
 
   pathfinder = new Pathfinder();
   pathfinder->setCar(this);
@@ -35,27 +39,31 @@ void Car::setMotorSpeed(int speed) {
 }
 
 void Car::turnLeft() {
-  setMotorSpeed(100);
+  canMeasure = false;
+  setMotorSpeed(85);
   moveLeft(-1);
   moveRight(1);
   setMotorSpeed(70);
+  canMeasure = true;
 }
 
 void Car::turnRight() {
-  setMotorSpeed(100);
+  canMeasure = false;
+  setMotorSpeed(85);
   moveRight(-1);
   moveLeft(1);
   setMotorSpeed(70);
+  canMeasure = true;
 }
 
 void Car::moveAllLittle(int dir) {
   moveAll(dir);
-  delay(160);
-  stopAll();
   delay(100);
+  stopAll();
 }
 
 void Car::moveAll(int dir) {
+  canMeasure = true;
   Motor.speed(MOTOR1, getMotorSpeed() * dir * -1);
   Motor.speed(MOTOR2, getMotorSpeed() * dir * -1);
 }
@@ -164,7 +172,7 @@ void Car::movePattern(bool left, bool right, bool middleLeft, bool middleRight) 
   if(hasFinishedPattern) {
     return;
   }
-
+  
   if ((allowTurnLeft) & ! (allowTurnRight)) {
     turnLeft();
   } else if ((allowTurnRight) & ! (allowTurnLeft)) {
@@ -228,6 +236,30 @@ void Car::movePattern(bool left, bool right, bool middleLeft, bool middleRight) 
 }
 
 void Car::readDirs() {
+  
+    int nId = pathfinder->getNodeId(pathfinder->directions[indexNode]);
+    int nextNId = pathfinder->getNodeId(pathfinder->directions[indexNode+1]);
+
+    Serial.print(nId);
+    Serial.print(" -> ");
+    Serial.println(nextNId);
+
+    String msg = "";
+
+    //if(nId >= 0 && nId <= 15) {
+      msg = "node";
+      msg = msg + ":" + String(nId);
+      sendMessage(msg.c_str());
+    //}
+
+    //if(nextNId >= 0 && nextNId <= 15) {
+      msg = "nextNode";
+      msg = msg + ":" + String(nextNId);
+      sendMessage(msg.c_str());
+    //}
+
+    indexNode++;
+    
     char dir = pathfinder->dirs.charAt(dirsCursor);
     Serial.print(dirsCursor);
     Serial.print(" : ");
@@ -241,6 +273,9 @@ void Car::readDirs() {
     } else if(pathfinder->dirs.charAt(dirsCursor + 1) == '2') {
       flashingRight = true;
     }
+
+    Serial.print("dir : ");
+    Serial.println(dir);
 
     if(dir == '0') {
       dirsCursor++;
@@ -268,4 +303,26 @@ void Car::readDirs() {
       hasFinishedPattern = true;
       return;
     }
+}
+
+void Car::sendMessage(const char* msg){
+
+    //msg = "Test de la trame !!!!!!!!!!!!!!!";
+    int idVehicle = 155;
+    char message[strlen(msg)+1];
+    int conversion = 0;
+    int key = 5;
+
+    message[0] = (char) idVehicle;
+    for(int i=0; i < strlen(msg); ++i)
+    {
+      conversion = (int) msg[i] + key;
+      message[i+1] = (char) conversion;
+    }
+    vw_send((uint8_t *)message, strlen(msg)+1);
+
+    stopAll();
+    vw_wait_tx();
+    moveAll(1);
+    
 }
