@@ -44,7 +44,6 @@ void Car::turnLeft() {
   moveLeft(-1);
   moveRight(1);
   setMotorSpeed(70);
-  canMeasure = true;
 }
 
 void Car::turnRight() {
@@ -53,7 +52,6 @@ void Car::turnRight() {
   moveRight(-1);
   moveLeft(1);
   setMotorSpeed(70);
-  canMeasure = true;
 }
 
 void Car::moveAllLittle(int dir) {

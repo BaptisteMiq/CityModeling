@@ -194,7 +194,11 @@ void espace(int distCm){
     metre = ((ms/10) * (intervalTime/1000))*100;
     String distanceStockees = String(id) + " " + String(metre);
     Serial.print("Espace = ");
-    sendMessage(distanceStockees.c_str());
+
+    String msg = "placeDist";
+    msg = msg + ":" + String(metre);
+    sendMessage(msg.c_str());
+    
     Serial.println(distanceStockees);
     distanceEspace = 0;
     intervalTime = 0;
